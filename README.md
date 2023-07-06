@@ -2,55 +2,142 @@
 
 ## Table of Contents
 
-- [About](#about)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-  * [Preparing your GPU Nodes](#preparing-your-gpu-nodes)
-  * [Enabling GPU Support in Kubernetes](#enabling-gpu-support-in-kubernetes)
-  * [Running GPU Jobs](#running-gpu-jobs)
-- [Configuring the NVIDIA device plugin binary](#configuring-the-nvidia-device-plugin-binary)
-  * [As command line flags or envvars](#as-command-line-flags-or-envvars)
-  * [As a configuration file](#as-a-configuration-file)
-  * [Configuration Option Details](#configuration-option-details)
-  * [Shared Access to GPUs with CUDA Time-Slicing](#shared-access-to-gpus-with-cuda-time-slicing)
-- [Deployment via `helm`](#deployment-via-helm)
-  * [Configuring the device plugin's `helm` chart](#configuring-the-device-plugins-helm-chart)
-    + [Passing configuration to the plugin via a `ConfigMap`.](#passing-configuration-to-the-plugin-via-a-configmap)
-      - [Single Config File Example](#single-config-file-example)
-      - [Multiple Config File Example](#multiple-config-file-example)
-      - [Updating Per-Node Configuration With a Node Label](#updating-per-node-configuration-with-a-node-label)
-    + [Setting other helm chart values](#setting-other-helm-chart-values)
-    + [Deploying with gpu-feature-discovery for automatic node labels](#deploying-with-gpu-feature-discovery-for-automatic-node-labels)
-  * [Deploying via `helm install` with a direct URL to the `helm` package](#deploying-via-helm-install-with-a-direct-url-to-the-helm-package)
-- [Building and Running Locally](#building-and-running-locally)
-- [Changelog](#changelog)
-- [Issues and Contributing](#issues-and-contributing)
+- [NVIDIA device plugin for Kubernetes](#nvidia-device-plugin-for-kubernetes)
+  - [Table of Contents](#table-of-contents)
+  - [About](#about)
+  - [Prerequisites](#prerequisites)
+  - [Quick Start](#quick-start)
+    - [Preparing your GPU Nodes](#preparing-your-gpu-nodes)
+      - [Example for debian-based systems with `docker` and `containerd`](#example-for-debian-based-systems-with-docker-and-containerd)
+        - [Install the `nvidia-container-toolkit`](#install-the-nvidia-container-toolkit)
+        - [Configure `docker`](#configure-docker)
+        - [Configure `containerd`](#configure-containerd)
+    - [Enabling GPU Support in Kubernetes](#enabling-gpu-support-in-kubernetes)
+    - [Running GPU Jobs](#running-gpu-jobs)
+  - [Configuring the NVIDIA device plugin binary](#configuring-the-nvidia-device-plugin-binary)
+    - [As command line flags or envvars](#as-command-line-flags-or-envvars)
+    - [As a configuration file](#as-a-configuration-file)
+    - [Configuration Option Details](#configuration-option-details)
+    - [Shared Access to GPUs with CUDA Time-Slicing](#shared-access-to-gpus-with-cuda-time-slicing)
+  - [Deployment via `helm`](#deployment-via-helm)
+    - [Configuring the device plugin's `helm` chart](#configuring-the-device-plugins-helm-chart)
+      - [Passing configuration to the plugin via a `ConfigMap`.](#passing-configuration-to-the-plugin-via-a-configmap)
+        - [Single Config File Example](#single-config-file-example)
+        - [Multiple Config File Example](#multiple-config-file-example)
+        - [Updating Per-Node Configuration With a Node Label](#updating-per-node-configuration-with-a-node-label)
+      - [Setting other helm chart values](#setting-other-helm-chart-values)
+      - [Deploying with gpu-feature-discovery for automatic node labels](#deploying-with-gpu-feature-discovery-for-automatic-node-labels)
+    - [Deploying via `helm install` with a direct URL to the `helm` package](#deploying-via-helm-install-with-a-direct-url-to-the-helm-package)
+  - [Building and Running Locally](#building-and-running-locally)
+    - [With Docker](#with-docker)
+      - [Build](#build)
+      - [Run](#run)
+    - [Without Docker](#without-docker)
+      - [Build](#build-1)
+      - [Run](#run-1)
+  - [Changelog](#changelog)
+    - [Version v0.14.0](#version-v0140)
+    - [Version v0.14.0-rc.3](#version-v0140-rc3)
+    - [Version v0.14.0-rc.2](#version-v0140-rc2)
+    - [Version v0.14.0-rc.1](#version-v0140-rc1)
+    - [Version v0.13.0](#version-v0130)
+    - [Version v0.13.0-rc.3](#version-v0130-rc3)
+    - [Version v0.13.0-rc.2](#version-v0130-rc2)
+    - [Version v0.13.0-rc.1](#version-v0130-rc1)
+    - [Version v0.12.3](#version-v0123)
+    - [Version v0.12.2](#version-v0122)
+    - [Version v0.12.1](#version-v0121)
+    - [Version v0.12.0](#version-v0120)
+    - [Version v0.12.0-rc.6](#version-v0120-rc6)
+    - [Version v0.12.0-rc.5](#version-v0120-rc5)
+    - [Version v0.12.0-rc.4](#version-v0120-rc4)
+    - [Version v0.12.0-rc.3](#version-v0120-rc3)
+    - [Version v0.12.0-rc.2](#version-v0120-rc2)
+    - [Version v0.12.0-rc.1](#version-v0120-rc1)
+    - [Version v0.11.0](#version-v0110)
+    - [Version v0.10.0](#version-v0100)
+    - [Version v0.9.0](#version-v090)
+    - [Version v0.8.2](#version-v082)
+    - [Version v0.8.1](#version-v081)
+    - [Version v0.8.0](#version-v080)
+    - [Version v0.7.3](#version-v073)
+    - [Version v0.7.2](#version-v072)
+    - [Version v0.7.1](#version-v071)
+    - [Version v0.7.0](#version-v070)
+    - [Version v0.7.0-rc.8](#version-v070-rc8)
+    - [Version v0.7.0-rc.7](#version-v070-rc7)
+    - [Version v0.7.0-rc.6](#version-v070-rc6)
+    - [Version v0.7.0-rc.5](#version-v070-rc5)
+    - [Version v0.7.0-rc.4](#version-v070-rc4)
+    - [Version v0.7.0-rc.3](#version-v070-rc3)
+    - [Version v0.7.0-rc.2](#version-v070-rc2)
+    - [Version v0.7.0-rc.1](#version-v070-rc1)
+    - [Version v0.6.0](#version-v060)
+    - [Version v0.5.0](#version-v050)
+    - [Version v0.4.0](#version-v040)
+    - [Version v0.3.0](#version-v030)
+    - [Version v0.2.0](#version-v020)
+    - [Version v0.1.0](#version-v010)
+    - [Version v0.0.0](#version-v000)
+    - [Version v1.11](#version-v111)
+    - [Version v1.10](#version-v110)
+    - [Version v1.9](#version-v19)
+  - [Issues and Contributing](#issues-and-contributing)
+    - [Versioning](#versioning)
+    - [Upgrading Kubernetes with the Device Plugin](#upgrading-kubernetes-with-the-device-plugin)
 
 ## About
 
 The NVIDIA device plugin for Kubernetes is a Daemonset that allows you to automatically:
+适用于 Kubernetes 的 NVIDIA 设备插件是一个 Daemonset，可让您自动执行以下操作：
+
 - Expose the number of GPUs on each nodes of your cluster
+  公开集群每个节点上的 GPU 数量
+
 - Keep track of the health of your GPUs
+  跟踪 GPU 的运行状况
+
 - Run GPU enabled containers in your Kubernetes cluster.
+  在 Kubernetes 集群中运行支持 GPU 的容器。
 
 This repository contains NVIDIA's official implementation of the [Kubernetes device plugin](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/resource-management/device-plugin.md).
+该存储库包含 NVIDIA 的 Kubernetes 设备插件的官方实现。
 
 Please note that:
 - The NVIDIA device plugin API is beta as of Kubernetes v1.10.
+  从 Kubernetes v1.10 开始，NVIDIA 设备插件 API 处于测试版状态。
+
 - The NVIDIA device plugin is currently lacking
+  目前缺少 NVIDIA 设备插件
+
     - Comprehensive GPU health checking features
+      全面的 GPU 健康检查功能
+
     - GPU cleanup features
+      GPU 清理功能
+
     - ...
+
 - Support will only be provided for the official NVIDIA device plugin (and not
   for forks or other variants of this plugin).
+  仅支持官方 NVIDIA 设备插件（不支持该插件的分支或其他变体）。
 
 ## Prerequisites
 
 The list of prerequisites for running the NVIDIA device plugin is described below:
+运行 NVIDIA 设备插件的先决条件列表如下所述：
+
 * NVIDIA drivers ~= 384.81
+  NVIDIA 驱动程序 ~= 384.81
+
 * nvidia-docker >= 2.0 || nvidia-container-toolkit >= 1.7.0 (>= 1.11.0 to use integrated GPUs on Tegra-based systems)
+  nvidia-docker >= 2.0 || nvidia-container-toolkit >= 1.7.0（>= 1.11.0 在基于 Tegra 的系统上使用集成 GPU）
+
 * nvidia-container-runtime configured as the default low-level runtime
+  nvidia-container-runtime 配置为默认低级运行时
+
 * Kubernetes version >= 1.10
+  Kubernetes 版本 >= 1.10
 
 ## Quick Start
 
@@ -59,12 +146,15 @@ The list of prerequisites for running the NVIDIA device plugin is described belo
 The following steps need to be executed on all your GPU nodes.
 This README assumes that the NVIDIA drivers and the `nvidia-container-toolkit` have been pre-installed.
 It also assumes that you have configured the `nvidia-container-runtime` as the default low-level runtime to use.
+需要在所有 GPU 节点上执行以下步骤。 本自述文件假定已预安装 NVIDIA 驱动程序和 nvidia-container-toolkit。
+它还假设您已将 nvidia-container-runtime 配置为要使用的默认低级运行时。
 
 Please see: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
 
 #### Example for debian-based systems with `docker` and `containerd`
 
 ##### Install the `nvidia-container-toolkit`
+
 ```bash
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | sudo apt-key add -
@@ -74,9 +164,11 @@ sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 ```
 
 ##### Configure `docker`
+
 When running `kubernetes` with `docker`, edit the config file which is usually
 present at `/etc/docker/daemon.json` to set up `nvidia-container-runtime` as
 the default low-level runtime:
+
 ```json
 {
     "default-runtime": "nvidia",
@@ -88,15 +180,19 @@ the default low-level runtime:
     }
 }
 ```
+
 And then restart `docker`:
+
 ```
 $ sudo systemctl restart docker
 ```
 
 ##### Configure `containerd`
+
 When running `kubernetes` with `containerd`, edit the config file which is
 usually present at `/etc/containerd/config.toml` to set up
 `nvidia-container-runtime` as the default low-level runtime:
+
 ```
 version = 2
 [plugins]
@@ -113,7 +209,9 @@ version = 2
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
             BinaryName = "/usr/bin/nvidia-container-runtime"
 ```
+
 And then restart `containerd`:
+
 ```
 $ sudo systemctl restart containerd
 ```
@@ -170,6 +268,7 @@ Done
 
 > **WARNING:** *if you don't request GPUs when using the device plugin with NVIDIA images all
 > the GPUs on the machine will be exposed inside your container.*
+> 警告：如果您在将设备插件与 NVIDIA 映像一起使用时不请求 GPU，则计算机上的所有 GPU 都将暴露在容器内。
 
 ## Configuring the NVIDIA device plugin binary
 
@@ -179,6 +278,8 @@ or via a config file when launching the device plugin. Here we explain what
 each of these options are and how to configure them directly against the plugin
 binary. The following section explains how to set these configurations when
 deploying the plugin via `helm`.
+NVIDIA 设备插件有许多可以配置的选项。 这些选项可以配置为命令行标志、环境变量，或在启动设备插件时通过配置文件配置。
+在这里，我们解释每个选项的含义以及如何直接针对插件二进制文件配置它们。 以下部分介绍了通过 helm 部署插件时如何设置这些配置。
 
 ### As command line flags or envvars
 
@@ -193,6 +294,7 @@ deploying the plugin via `helm`.
 | `--config-file`          | `$CONFIG_FILE`          | `""`            |
 
 ### As a configuration file
+
 ```
 version: v1
 flags:
@@ -210,8 +312,11 @@ is a shared configuration between the plugin and
 [`gpu-feature-discovery`](https://github.com/NVIDIA/gpu-feature-discovery).
 All options inside the `plugin` section are specific to the plugin. All
 options outside of this section are shared.
+注意：配置文件有一个显式的插件部分，因为它是插件和 gpu-feature-discovery 之间的共享配置。
+插件部分内的所有选项均特定于插件。 本节之外的所有选项都是共享的。
 
 ### Configuration Option Details
+
 **`MIG_STRATEGY`**:
   the desired strategy for exposing MIG devices on GPUs that support it
 
@@ -321,9 +426,14 @@ one another. However, nothing special is done to isolate workloads that are
 granted replicas from the same underlying GPU, and each workload has access to
 the GPU memory and runs in the same fault-domain as of all the others (meaning
 if one workload crashes, they all do).
-
+NVIDIA 设备插件允许通过其配置文件中的一组扩展选项超额订阅 GPU。
+在幕后，CUDA 时间切片用于允许超额订阅 GPU 上的工作负载相互交错。
+但是，没有采取任何特殊措施来隔离从同一底层 GPU 授予副本的工作负载，
+并且每个工作负载都可以访问 GPU 内存，
+并在与所有其他工作负载相同的故障域中运行（这意味着如果一个工作负载崩溃，它们都会崩溃） 做）。
 
 These extended options can be seen below:
+
 ```
 version: v1
 sharing:
@@ -350,6 +460,7 @@ pod will fail with an `UnexpectedAdmissionError` and need to be manually deleted
 updated, and redeployed.
 
 For example:
+
 ```
 version: v1
 sharing:
