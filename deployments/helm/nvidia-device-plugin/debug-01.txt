@@ -1,0 +1,318 @@
+$ helm install nvdp ./ --namespace device-plugin --create-namespace --version 0.14.0 --debug --dry-run > debug-01.txt
+
+NAME: nvdp
+LAST DEPLOYED: Fri Jul  7 19:57:00 2023
+NAMESPACE: device-plugin
+STATUS: pending-install
+REVISION: 1
+TEST SUITE: None
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+affinity: {}
+allowDefaultNamespace: false
+compatWithCPUManager: null
+config:
+  default: ""
+  fallbackStrategies:
+  - named
+  - single
+  map: {}
+  name: ""
+deviceIDStrategy: null
+deviceListStrategy: null
+failOnInitError: null
+fullnameOverride: ""
+gdsEnabled: null
+gfd:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: feature.node.kubernetes.io/pci-10de.present
+            operator: In
+            values:
+            - "true"
+        - matchExpressions:
+          - key: feature.node.kubernetes.io/cpu-model.vendor_id
+            operator: In
+            values:
+            - NVIDIA
+        - matchExpressions:
+          - key: nvidia.com/gpu.present
+            operator: In
+            values:
+            - "true"
+  enabled: false
+  fullnameOverride: ""
+  global: {}
+  image:
+    pullPolicy: IfNotPresent
+    repository: nvcr.io/nvidia/gpu-feature-discovery
+    tag: ""
+  imagePullSecrets: []
+  nameOverride: gpu-feature-discovery
+  namespaceOverride: ""
+  noTimestamp: null
+  nodeSelector: {}
+  podAnnotations: {}
+  podSecurityContext: {}
+  resources: {}
+  securityContext:
+    privileged: true
+  selectorLabelsOverride: {}
+  sleepInterval: null
+image:
+  pullPolicy: IfNotPresent
+  repository: nvcr.io/nvidia/k8s-device-plugin
+  tag: ""
+imagePullSecrets: []
+legacyDaemonsetAPI: null
+migStrategy: null
+mofedEnabled: null
+nameOverride: ""
+namespaceOverride: ""
+nfd:
+  enableNodeFeatureApi: false
+  fullnameOverride: ""
+  global: {}
+  image:
+    pullPolicy: IfNotPresent
+    repository: registry.k8s.io/nfd/node-feature-discovery
+  imagePullSecrets: []
+  master:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+            - key: node-role.kubernetes.io/master
+              operator: In
+              values:
+              - ""
+          weight: 1
+        - preference:
+            matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: In
+              values:
+              - ""
+          weight: 1
+    annotations: {}
+    crdController: null
+    deploymentAnnotations: {}
+    extraLabelNs:
+    - nvidia.com
+    featureApi: null
+    featureRulesController: null
+    instance: null
+    nodeSelector: {}
+    podSecurityContext: {}
+    rbac:
+      create: true
+    replicaCount: 1
+    resourceLabels: []
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    service:
+      port: 8080
+      type: ClusterIP
+    serviceAccount:
+      annotations: {}
+      create: true
+      name: node-feature-discovery
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Equal
+      value: ""
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Equal
+      value: ""
+  nameOverride: node-feature-discovery
+  namespaceOverride: ""
+  tls:
+    certManager: false
+    enable: false
+  topologyUpdater:
+    affinity: {}
+    annotations: {}
+    config: null
+    createCRDs: false
+    enable: false
+    kubeletConfigPath: null
+    kubeletPodResourcesSockPath: null
+    nodeSelector: {}
+    podSecurityContext: {}
+    rbac:
+      create: false
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsUser: 0
+    serviceAccount:
+      annotations: {}
+      create: false
+      name: null
+    tolerations: []
+    updateInterval: 60s
+    watchNamespace: '*'
+  worker:
+    affinity: {}
+    annotations: {}
+    config:
+      sources:
+        pci:
+          deviceClassWhitelist:
+          - "02"
+          - "0200"
+          - "0207"
+          - "0300"
+          - "0302"
+          deviceLabelFields:
+          - vendor
+    daemonsetAnnotations: {}
+    mountUsrSrc: false
+    nodeSelector: {}
+    podSecurityContext: {}
+    priorityClassName: ""
+    rbac:
+      create: true
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    serviceAccount:
+      annotations: {}
+      create: true
+      name: null
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Equal
+      value: ""
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Equal
+      value: present
+nodeSelector: {}
+nvidiaDriverRoot: null
+podAnnotations: {}
+podSecurityContext: {}
+priorityClassName: system-node-critical
+resources: {}
+runtimeClassName: null
+securityContext: {}
+selectorLabelsOverride: {}
+tolerations:
+- key: CriticalAddonsOnly
+  operator: Exists
+- effect: NoSchedule
+  key: nvidia.com/gpu
+  operator: Exists
+updateStrategy:
+  type: RollingUpdate
+
+HOOKS:
+MANIFEST:
+---
+# Source: nvidia-device-plugin/templates/daemonset.yml
+# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvdp-nvidia-device-plugin
+  namespace: device-plugin
+  labels:
+    helm.sh/chart: nvidia-device-plugin-0.14.0
+    app.kubernetes.io/name: nvidia-device-plugin
+    app.kubernetes.io/instance: nvdp
+    app.kubernetes.io/version: "0.14.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nvidia-device-plugin
+      app.kubernetes.io/instance: nvdp
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nvidia-device-plugin
+        app.kubernetes.io/instance: nvdp
+      annotations:
+        {}
+    spec:
+      priorityClassName: system-node-critical
+      securityContext:
+        {}
+      containers:
+      - image: nvcr.io/nvidia/k8s-device-plugin:v0.14.0
+        imagePullPolicy: IfNotPresent
+        name: nvidia-device-plugin-ctr
+        env:
+          - name: NVIDIA_MIG_MONITOR_DEVICES
+            value: all
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          operator: Exists
+---
+# Source: nvidia-device-plugin/templates/gfd.yml
+# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
